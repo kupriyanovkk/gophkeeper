@@ -5,13 +5,13 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/model"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/storage"
 	"github.com/kupriyanovkk/gophkeeper/pkg/crypt"
 	"github.com/kupriyanovkk/gophkeeper/pkg/failure"
 	"github.com/kupriyanovkk/gophkeeper/pkg/jwt"
 	pb "github.com/kupriyanovkk/gophkeeper/proto"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +21,7 @@ type UserService struct {
 	pb.UnimplementedUserServer
 	storage    storage.UserStorage
 	jwtManager jwt.JWTManager
-	crypter    crypt.Crypter
+	crypter    crypt.CryptAbstract
 }
 
 // RegisterService registers the User service.
@@ -46,6 +46,7 @@ func (s *UserService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 		if errors.Is(err, failure.ErrConflict) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
+
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -66,7 +67,7 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 		Password: req.Password,
 	})
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())
@@ -86,12 +87,12 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 //
 //	s - storage.UserStorage
 //	m - jwt.JWTManager
-//	c - crypt.Crypter
+//	c - crypt.CryptAbstract
 //
 // Return:
 //
 //	*UserService
-func NewUserService(s storage.UserStorage, m jwt.JWTManager, c crypt.Crypter) *UserService {
+func NewUserService(s storage.UserStorage, m jwt.JWTManager, c crypt.CryptAbstract) *UserService {
 	return &UserService{
 		storage:    s,
 		jwtManager: m,

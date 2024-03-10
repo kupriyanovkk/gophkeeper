@@ -7,21 +7,20 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	"github.com/jackc/pgx/v5"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/config"
 	authMiddleware "github.com/kupriyanovkk/gophkeeper/internal/server/middleware/auth"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/service"
-	"github.com/kupriyanovkk/gophkeeper/internal/server/storage/mongodb"
+	"github.com/kupriyanovkk/gophkeeper/internal/server/storage/pg"
 	"github.com/kupriyanovkk/gophkeeper/pkg/crypt"
 	"github.com/kupriyanovkk/gophkeeper/pkg/jwt"
 	"github.com/kupriyanovkk/gophkeeper/pkg/logger"
 	"github.com/kupriyanovkk/gophkeeper/pkg/server"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
 type App struct {
-	DB     *mongo.Client
+	DB     *pgx.Conn
 	Server *server.GRPCServer
 	Logger *zap.Logger
 }
@@ -83,27 +82,19 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("jwt.NewJWT error: %w", errJwt)
 	}
 
-	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(config.DatabaseDSN).SetServerAPIOptions(serverAPI)
-	mongoClient, err := mongo.Connect(context.TODO(), opts)
+	dbConn, err := pgx.Connect(ctx, config.DatabaseDSN)
 	if err != nil {
-		return nil, fmt.Errorf("mongo.Connect error: %w", err)
+		return nil, fmt.Errorf("pgx.Connect error: %w", err)
 	}
 
-	defer func() {
-		if err = mongoClient.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
-
-	if err = mongoClient.Ping(context.TODO(), nil); err != nil {
-		return nil, fmt.Errorf("mongo.Ping error: %w", err)
+	if err = dbConn.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("dbConn.Ping error: %w", err)
 	}
 
-	privateStorage := mongodb.NewPrivateStore(mongoClient)
+	privateStorage := pg.NewPrivateStore(dbConn)
 	privateService := service.NewPrivateService(privateStorage)
 
-	userStorage := mongodb.NewUserStore(mongoClient)
+	userStorage := pg.NewUserStore(dbConn)
 	userService := service.NewUserService(userStorage, jwtManager, crypt)
 
 	authMiddleware := authMiddleware.NewAuthMiddleware(jwtManager, crypt).Auth
@@ -125,7 +116,7 @@ func NewApp(ctx context.Context) (*App, error) {
 	)
 
 	return &App{
-		DB:     mongoClient,
+		DB:     dbConn,
 		Server: gRPCServer,
 		Logger: logger,
 	}, nil

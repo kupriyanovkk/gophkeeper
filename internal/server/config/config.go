@@ -12,7 +12,7 @@ type Config struct {
 	SSLKeyPath  string `env:"SSL_KEY_PATH" envDefault:"./certs/localhost.key"`
 	JWTSecret   string `env:"JWT_SECRET" envDefault:"jwt_secret"`
 	JWTExp      string `env:"JWT_EXP" envDefault:"24"`
-	DatabaseDSN string `env:"DATABASE_DSN" envDefault:"mongodb://localhost:27017/"`
+	DatabaseDSN string `env:"DSN" envDefault:"postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"`
 }
 
 var config Config

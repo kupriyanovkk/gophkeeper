@@ -5,11 +5,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/middleware/auth"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/model"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/storage"
+	"github.com/kupriyanovkk/gophkeeper/pkg/failure"
 	pb "github.com/kupriyanovkk/gophkeeper/proto"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -76,9 +77,13 @@ func (s *PrivateService) UpdatePrivateData(ctx context.Context, req *pb.UpdatePr
 
 	_, err := s.storage.UpdatePrivateData(ctx, private)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
+		if errors.Is(err, failure.ErrCouldNotUpdatePrivateData) {
+			return nil, status.Error(codes.FailedPrecondition, err.Error())
+		}
+
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &pb.UpdatePrivateDataResponse{}, nil
@@ -98,9 +103,10 @@ func (s *PrivateService) GetPrivateData(ctx context.Context, req *pb.GetPrivateD
 
 	result, err := s.storage.GetPrivateData(ctx, private)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
+
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -127,7 +133,7 @@ func (s *PrivateService) DeletePrivateData(ctx context.Context, req *pb.DeletePr
 
 	err := s.storage.DeletePrivateData(ctx, private)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, err.Error())
 		}
 		return nil, status.Error(codes.Internal, err.Error())

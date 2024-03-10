@@ -10,7 +10,6 @@ type UserStorage interface {
 	Create(ctx context.Context, user model.User) (model.User, error)
 	Update(ctx context.Context, user model.User) (model.User, error)
 	Get(ctx context.Context, user model.User) (model.User, error)
-	// Delete(ctx context.Context, userID uint32) error
 }
 
 type PrivateStorage interface {

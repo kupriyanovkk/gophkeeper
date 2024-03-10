@@ -17,7 +17,7 @@ type Auth interface {
 
 type AuthMiddleware struct {
 	jwtManager     jwt.JWTManager
-	crypter        crypt.Crypter
+	crypter        crypt.CryptAbstract
 	skippedMethods []string
 }
 
@@ -73,7 +73,7 @@ func (m *AuthMiddleware) isSkippedMethod(ctx context.Context) bool {
 //	c crypt.Crypter - the crypter
 //
 // Return type: *AuthMiddleware
-func NewAuthMiddleware(j jwt.JWTManager, c crypt.Crypter) *AuthMiddleware {
+func NewAuthMiddleware(j jwt.JWTManager, c crypt.CryptAbstract) *AuthMiddleware {
 	return &AuthMiddleware{
 		jwtManager:     j,
 		crypter:        c,

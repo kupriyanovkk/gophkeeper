@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type Crypter interface {
+type CryptAbstract interface {
 	Encode(payload string) string
 	Decode(sha string) (string, error)
 }

@@ -3,16 +3,16 @@ package model
 import "time"
 
 type PrivateData struct {
-	ID      uint32    `bson:"_id"`
-	Title   string    `bson:"title"`
-	Type    uint32    `bson:"type"`
-	UserID  uint32    `bson:"user_id"`
-	Content []byte    `bson:"content"`
-	Updated time.Time `bson:"updated"`
-	Deleted bool      `bson:"deleted"`
+	ID      uint32    `json:"id"`
+	Title   string    `json:"title"`
+	Type    uint32    `json:"type"`
+	UserID  uint32    `json:"user_id"`
+	Content []byte    `json:"content"`
+	Updated time.Time `json:"updated"`
+	Deleted bool      `json:"deleted"`
 }
 
 type PrivateDataType struct {
-	ID    uint
-	Title string
+	ID    uint   `json:"id"`
+	Title string `json:"title"`
 }
