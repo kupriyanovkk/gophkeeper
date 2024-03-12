@@ -170,55 +170,12 @@ func (s *PrivatePostgresStorage) GetPrivateDataByType(ctx context.Context, priva
 	return privateData, nil
 }
 
-// bootstrap is a function that handles the initialization of the private postgres storage.
-//
-// It takes a context as a parameter and returns an error.
-func (s *PrivatePostgresStorage) bootstrap(ctx context.Context) error {
-	tx, err := s.conn.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback(ctx)
-
-	_, err = tx.Exec(ctx, `
-		create table if not exists private (
-			id bigserial primary key,
-			user_id int not null,
-			title text not null,
-			type int not null,
-			content bytea not null,
-			updated timestamp default now(),
-			deleted boolean not null
-		)
-	`)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, `
-		create index if not exists private_id_idx on private (id)
-	`)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
 // NewPrivateStore creates a new instance of PrivatePostgresStorage and initializes it with the provided pgx.Conn.
 //
 // c: a pointer to the pgx.Conn object to be used for database operations.
 // Returns a pointer to the newly created PrivatePostgresStorage object.
 func NewPrivateStore(c *pgx.Conn) *PrivatePostgresStorage {
-	storage := &PrivatePostgresStorage{
+	return &PrivatePostgresStorage{
 		conn: c,
 	}
-
-	err := storage.bootstrap(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	return storage
 }

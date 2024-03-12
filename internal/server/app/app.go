@@ -12,9 +12,11 @@ import (
 	authMiddleware "github.com/kupriyanovkk/gophkeeper/internal/server/middleware/auth"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/service"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/storage/pg"
+	"github.com/kupriyanovkk/gophkeeper/internal/server/storage/utils"
 	"github.com/kupriyanovkk/gophkeeper/pkg/crypt"
 	"github.com/kupriyanovkk/gophkeeper/pkg/jwt"
 	"github.com/kupriyanovkk/gophkeeper/pkg/logger"
+	"github.com/kupriyanovkk/gophkeeper/pkg/migration"
 	"github.com/kupriyanovkk/gophkeeper/pkg/server"
 	"go.uber.org/zap"
 )
@@ -82,14 +84,12 @@ func NewApp(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("jwt.NewJWT error: %w", errJwt)
 	}
 
-	dbConn, err := pgx.Connect(ctx, config.DatabaseDSN)
-	if err != nil {
-		return nil, fmt.Errorf("pgx.Connect error: %w", err)
+	migration := migration.NewMigration(config)
+	if err := migration.Up(); err != nil {
+		return nil, fmt.Errorf("migration.Up error: %w", err)
 	}
 
-	if err = dbConn.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("dbConn.Ping error: %w", err)
-	}
+	dbConn := utils.CreatePostgresConn(ctx, config.DatabaseDSN)
 
 	privateStorage := pg.NewPrivateStore(dbConn)
 	privateService := service.NewPrivateService(privateStorage)

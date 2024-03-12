@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/middleware/auth"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/model"
@@ -36,10 +37,10 @@ func (s *PrivateService) RegisterService(r grpc.ServiceRegistrar) {
 // ctx context.Context, req *pb.CreatePrivateDataRequest
 // *pb.CreatePrivateDataResponse, error
 func (s *PrivateService) CreatePrivateData(ctx context.Context, req *pb.CreatePrivateDataRequest) (*pb.CreatePrivateDataResponse, error) {
-	token := ctx.Value(auth.JwtTokenCtx{}).(uint32)
+	token := ctx.Value(auth.JwtTokenCtx{}).(string)
 
 	private := model.PrivateData{
-		UserID:  token,
+		UserID:  uuid.MustParse(token),
 		Title:   req.Title,
 		Type:    req.Type,
 		Content: req.Content,
@@ -64,10 +65,10 @@ func (s *PrivateService) CreatePrivateData(ctx context.Context, req *pb.CreatePr
 //
 // It takes a context and a request to update private data, and returns a response or an error.
 func (s *PrivateService) UpdatePrivateData(ctx context.Context, req *pb.UpdatePrivateDataRequest) (*pb.UpdatePrivateDataResponse, error) {
-	token := ctx.Value(auth.JwtTokenCtx{}).(uint32)
+	token := ctx.Value(auth.JwtTokenCtx{}).(string)
 
 	private := model.PrivateData{
-		UserID:  token,
+		UserID:  uuid.MustParse(token),
 		ID:      req.Id,
 		Title:   req.Title,
 		Type:    req.Type,
@@ -94,10 +95,10 @@ func (s *PrivateService) UpdatePrivateData(ctx context.Context, req *pb.UpdatePr
 // ctx context.Context, req *pb.GetPrivateDataRequest
 // *pb.GetPrivateDataResponse, error
 func (s *PrivateService) GetPrivateData(ctx context.Context, req *pb.GetPrivateDataRequest) (*pb.GetPrivateDataResponse, error) {
-	token := ctx.Value(auth.JwtTokenCtx{}).(uint32)
+	token := ctx.Value(auth.JwtTokenCtx{}).(string)
 
 	private := model.PrivateData{
-		UserID: token,
+		UserID: uuid.MustParse(token),
 		ID:     req.Id,
 	}
 
@@ -124,10 +125,10 @@ func (s *PrivateService) GetPrivateData(ctx context.Context, req *pb.GetPrivateD
 // ctx context.Context, req *pb.DeletePrivateDataRequest
 // *pb.DeletePrivateDataResponse, error
 func (s *PrivateService) DeletePrivateData(ctx context.Context, req *pb.DeletePrivateDataRequest) (*pb.DeletePrivateDataResponse, error) {
-	token := ctx.Value(auth.JwtTokenCtx{}).(uint32)
+	token := ctx.Value(auth.JwtTokenCtx{}).(string)
 
 	private := model.PrivateData{
-		UserID: token,
+		UserID: uuid.MustParse(token),
 		ID:     req.Id,
 	}
 
@@ -147,10 +148,14 @@ func (s *PrivateService) DeletePrivateData(ctx context.Context, req *pb.DeletePr
 // ctx context.Context, req *pb.GetPrivateDataByTypeRequest
 // *pb.GetPrivateDataByTypeResponse, error
 func (s *PrivateService) GetPrivateDataByType(ctx context.Context, req *pb.GetPrivateDataByTypeRequest) (*pb.GetPrivateDataByTypeResponse, error) {
-	token := ctx.Value(auth.JwtTokenCtx{}).(uint32)
+	token := ctx.Value(auth.JwtTokenCtx{}).(string)
+	userID, errParse := uuid.Parse(token)
+	if errParse != nil {
+		return nil, status.Error(codes.Internal, errParse.Error())
+	}
 
 	user := model.User{
-		ID: token,
+		ID: &userID,
 	}
 	dataType := model.PrivateDataType{
 		ID: uint(req.TypeId),

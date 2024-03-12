@@ -18,6 +18,9 @@ type Executor struct {
 	app *app.App
 }
 
+// Execute executes the command given as a string.
+//
+// s string
 func (e *Executor) Execute(s string) {
 	var isForce bool
 	cmd, args := parseCommandArgs(s)
@@ -116,6 +119,10 @@ func (e *Executor) Execute(s string) {
 	}
 }
 
+// login performs user login.
+//
+// args []string - the arguments for login.
+// error - returns an error if the login fails.
 func (e *Executor) login(args []string) error {
 	if len(args)-1 < 2 {
 		return fmt.Errorf("login: missing required arguments")
@@ -140,6 +147,10 @@ func (e *Executor) login(args []string) error {
 	return nil
 }
 
+// register registers a user with the provided arguments.
+//
+// args []string - the arguments for user registration.
+// error - returns an error if registration fails.
 func (e *Executor) register(args []string) error {
 	if len(args)-1 < 2 {
 		return fmt.Errorf("register: missing required arguments")
@@ -158,6 +169,9 @@ func (e *Executor) register(args []string) error {
 	return nil
 }
 
+// createLoginPass creates a login pass for the Executor.
+//
+// It takes a slice of strings 'args' as parameter and returns an error.
 func (e *Executor) createLoginPass(args []string) error {
 	if len(args)-1 < 3 {
 		return fmt.Errorf("create-login-pass: missing required arguments")
@@ -178,6 +192,10 @@ func (e *Executor) createLoginPass(args []string) error {
 	return e.app.PrivateService.CreatePrivate(loginPass.Title, loginPass.Type, string(content))
 }
 
+// createCard creates a private card with the given arguments.
+//
+// args []string
+// error
 func (e *Executor) createCard(args []string) error {
 	if len(args)-1 < 4 {
 		return fmt.Errorf("create-card: missing required arguments")
@@ -199,6 +217,10 @@ func (e *Executor) createCard(args []string) error {
 	return e.app.PrivateService.CreatePrivate(card.Title, card.Type, string(content))
 }
 
+// createText creates a text with the given arguments.
+//
+// Parameter(s): args []string
+// Return type: error
 func (e *Executor) createText(args []string) error {
 	if len(args)-1 < 2 {
 		return fmt.Errorf("create-text: missing required arguments")
@@ -218,6 +240,10 @@ func (e *Executor) createText(args []string) error {
 	return e.app.PrivateService.CreatePrivate(text.Title, text.Type, string(content))
 }
 
+// createFile creates a file based on the provided arguments.
+//
+// args []string
+// error
 func (e *Executor) createFile(args []string) error {
 	if len(args) < 2 {
 		return fmt.Errorf("create-file: missing required arguments")
@@ -237,6 +263,9 @@ func (e *Executor) createFile(args []string) error {
 	return e.app.PrivateService.CreatePrivate(file.Title, file.Type, string(data))
 }
 
+// getPrivateBinary is a function to retrieve a private binary.
+//
+// It takes an array of strings as the arguments and returns an error.
 func (e *Executor) getPrivateBinary(args []string) error {
 	if len(args) < 2 {
 		return fmt.Errorf("get-private-binary: missing required arguments")
@@ -250,6 +279,10 @@ func (e *Executor) getPrivateBinary(args []string) error {
 	return e.app.PrivateService.GetPrivateBinary(id, args[2])
 }
 
+// getPrivate retrieves private data.
+//
+// args []string
+// (interface{}, error)
 func (e *Executor) getPrivate(args []string) (interface{}, error) {
 	if len(args) < 2 {
 		return nil, fmt.Errorf("get-private: missing required arguments")
@@ -273,6 +306,10 @@ func (e *Executor) getPrivate(args []string) (interface{}, error) {
 	return private, nil
 }
 
+// getPrivateByType retrieves private data based on the provided type.
+//
+// args: a slice of strings representing the type and any additional arguments.
+// []model.PrivateDataList, error: returns a slice of private data and an error if any.
 func (e *Executor) getPrivateByType(args []string) ([]model.PrivateDataList, error) {
 	if len(args) < 1 {
 		return nil, fmt.Errorf("get-private-by-type: missing required arguments")
@@ -299,26 +336,32 @@ func (e *Executor) getPrivateByType(args []string) ([]model.PrivateDataList, err
 	return list, nil
 }
 
+// editPrivate edits a private entity based on the provided arguments and isForce flag.
+//
+// Parameters:
+// - args []string: the arguments for editing the private entity
+// - isForce bool: a flag indicating whether to force the edit operation
+// Return type: error
 func (e *Executor) editPrivate(args []string, isForce bool) error {
 	var (
-		secretType int
-		secretID   int
-		body       []byte
+		privateType int
+		privateID   int
+		body        []byte
 	)
 
 	numArgs := len(args) - 1
 	if numArgs >= 3 {
-		secretType, err := strconv.Atoi(args[3])
+		privateType, err := strconv.Atoi(args[3])
 		if err != nil {
 			return err
 		}
 
-		secretID, err = strconv.Atoi(args[1])
+		privateID, err = strconv.Atoi(args[1])
 		if err != nil {
 			return err
 		}
 
-		switch secretType {
+		switch privateType {
 		case int(storage.PrivateLoginPass):
 			switch numArgs {
 			case 4:
@@ -329,9 +372,9 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 
 			default:
 				p := model.PrivateLoginPass{
-					Id:       secretID,
+					Id:       privateID,
 					Title:    args[2],
-					Type:     secretType,
+					Type:     privateType,
 					Login:    args[4],
 					Password: args[5],
 				}
@@ -348,9 +391,9 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 
 			default:
 				p := model.PrivateText{
-					Id:    secretID,
+					Id:    privateID,
 					Title: args[2],
-					Type:  secretType,
+					Type:  privateType,
 					Text:  strings.Join(args[4:], " "),
 				}
 				body, err = json.Marshal(p)
@@ -366,9 +409,9 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 
 			default:
 				p := model.PrivateFile{
-					Id:    secretID,
+					Id:    privateID,
 					Title: args[2],
-					Type:  secretType,
+					Type:  privateType,
 					Path:  args[3],
 				}
 				body, err = json.Marshal(p)
@@ -390,9 +433,9 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 
 			default:
 				p := model.PrivateCard{
-					Id:         secretID,
+					Id:         privateID,
 					Title:      args[2],
-					Type:       secretType,
+					Type:       privateType,
 					CardNumber: args[4],
 					CVV:        args[5],
 					Due:        args[6],
@@ -404,10 +447,10 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 			}
 		}
 	} else {
-		return fmt.Errorf("validation error: Secret ID, Title, Secret Type ID and secret fields is missing")
+		return fmt.Errorf("validation error: fields is missing")
 	}
 
-	if err := e.app.PrivateService.EditPrivate(secretID, args[3], secretType, string(body), isForce); err != nil {
+	if err := e.app.PrivateService.EditPrivate(privateID, args[3], privateType, string(body), isForce); err != nil {
 		st, _ := status.FromError(err)
 		fmt.Println(st.Message())
 
@@ -423,6 +466,10 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 	return nil
 }
 
+// deletePrivate deletes a private item.
+//
+// args []string
+// error
 func (e *Executor) deletePrivate(args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("delete-private: missing required arguments")
@@ -436,6 +483,10 @@ func (e *Executor) deletePrivate(args []string) error {
 	return e.app.PrivateService.DeletePrivate(id)
 }
 
+// NewExecutor creates a new Executor.
+//
+// No parameters.
+// Returns a pointer to Executor.
 func NewExecutor() *Executor {
 	clientApp, err := app.NewApp()
 	if err != nil {

@@ -78,51 +78,11 @@ func (s *UserPostgresStorage) Update(ctx context.Context, user model.User) (mode
 	return user, nil
 }
 
-// bootstrap bootstraps the UserPostgresStorage.
-//
-// ctx context.Context
-// error
-func (s *UserPostgresStorage) bootstrap(ctx context.Context) error {
-	tx, err := s.conn.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback(ctx)
-
-	_, err = tx.Exec(ctx, `
-		create table if not exists users (
-			id serial primary key,
-			login text not null unique,
-			password text not null
-		)
-	`)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(ctx, `
-		create index if not exists users_login_index on users (login)
-	`)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
 // NewUserStore creates a new UserPostgresStorage.
 //
 // It takes a pointer to a pgx.Conn as a parameter and returns a pointer to UserPostgresStorage.
 func NewUserStore(c *pgx.Conn) *UserPostgresStorage {
-	storage := &UserPostgresStorage{
+	return &UserPostgresStorage{
 		conn: c,
 	}
-
-	err := storage.bootstrap(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	return storage
 }

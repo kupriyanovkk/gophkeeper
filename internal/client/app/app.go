@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kupriyanovkk/gophkeeper/internal/client/config"
 	"github.com/kupriyanovkk/gophkeeper/internal/client/interceptor"
@@ -36,31 +35,30 @@ func NewApp() (*App, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	globalCtx := model.GlobalContext{Ctx: ctx, Cancel: cancel}
 	config := config.NewConfig()
-	crypt, errCr := crypt.NewCrypt()
-	if errCr != nil {
-		return nil, fmt.Errorf("could create crypt")
-	}
-
-	tlsCredential, err := cert.NewSSLConfigService().LoadClientCertificate(config)
+	crypt, err := crypt.NewCrypt()
 	if err != nil {
-		return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
+		return nil, err
 	}
 
-	protectedRoutes := map[string]bool{
+	tlsCreds, err := cert.NewSSLConfigService().LoadClientCertificate(config)
+	if err != nil {
+		return nil, err
+	}
+
+	interceptor := interceptor.NewInterceptor(map[string]bool{
 		"/proto.Private/GetPrivateDataByType": true,
 		"/proto.Private/CreatePrivateData":    true,
 		"/proto.Private/GetPrivateData":       true,
 		"/proto.Private/DeletePrivateData":    true,
 		"/proto.Private/UpdatePrivateData":    true,
-	}
-	interceptor := interceptor.NewInterceptor(protectedRoutes)
+	})
 
-	conn, errConn := grpc.Dial(":"+config.Port,
-		grpc.WithTransportCredentials(tlsCredential),
+	conn, err := grpc.Dial(":"+config.Port,
+		grpc.WithTransportCredentials(tlsCreds),
 		grpc.WithUnaryInterceptor(interceptor.Unary()),
 	)
-	if errConn != nil {
-		return nil, errConn
+	if err != nil {
+		return nil, err
 	}
 
 	privateClient := pb.NewPrivateClient(conn)

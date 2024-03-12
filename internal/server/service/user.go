@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/kupriyanovkk/gophkeeper/internal/server/model"
@@ -50,9 +49,9 @@ func (s *UserService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	token, err := s.jwtManager.GenerateToken(strconv.FormatUint(uint64(result.ID), 10))
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	token, errToken := s.jwtManager.GenerateToken(result.ID.String())
+	if errToken != nil {
+		return nil, status.Error(codes.Internal, errToken.Error())
 	}
 
 	return &pb.RegisterResponse{Token: s.crypter.Encode(token)}, nil
@@ -73,9 +72,9 @@ func (s *UserService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	token, err := s.jwtManager.GenerateToken(strconv.FormatUint(uint64(result.ID), 10))
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	token, errToken := s.jwtManager.GenerateToken(result.ID.String())
+	if errToken != nil {
+		return nil, status.Error(codes.Internal, errToken.Error())
 	}
 
 	return &pb.LoginResponse{Token: s.crypter.Encode(token)}, nil

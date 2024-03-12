@@ -1,7 +1,9 @@
 package model
 
+import "github.com/google/uuid"
+
 type User struct {
-	ID       uint32
-	Login    string
-	Password string
+	ID       *uuid.UUID `json:"id"`
+	Login    string     `json:"login"`
+	Password string     `json:"password"`
 }

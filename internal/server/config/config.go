@@ -6,13 +6,14 @@ import (
 )
 
 type Config struct {
-	Address     string `env:"ADDRESS" envDefault:"localhost"`
-	Port        string `env:"PORT" envDefault:"8080"`
-	SSLCertPath string `env:"SSL_CERT_PATH" envDefault:"./certs/localhost.crt"`
-	SSLKeyPath  string `env:"SSL_KEY_PATH" envDefault:"./certs/localhost.key"`
-	JWTSecret   string `env:"JWT_SECRET" envDefault:"jwt_secret"`
-	JWTExp      string `env:"JWT_EXP" envDefault:"24"`
-	DatabaseDSN string `env:"DSN" envDefault:"postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"`
+	Address         string `env:"ADDRESS" envDefault:"localhost"`
+	Port            string `env:"PORT" envDefault:"8080"`
+	SSLCertPath     string `env:"SSL_CERT_PATH" envDefault:"./certs/localhost.crt"`
+	SSLKeyPath      string `env:"SSL_KEY_PATH" envDefault:"./certs/localhost.key"`
+	JWTSecret       string `env:"JWT_SECRET" envDefault:"jwt_secret"`
+	JWTExp          string `env:"JWT_EXP" envDefault:"24"`
+	DatabaseDSN     string `env:"DATABASE_DSN" envDefault:"postgres://postgres:postgres@localhost:5432/gophkeeper?sslmode=disable"`
+	DatabaseDSNTest string `env:"DATABASE_DSN_TEST" envDefault:"postgres://postgres:postgres@localhost:5432/gophkeeper_test?sslmode=disable"`
 }
 
 var config Config
