@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kupriyanovkk/gophkeeper/proto";
+
+message CreatePrivateDataRequest {
+  string title = 1;
+  uint32 type = 2;
+  bytes content = 3;
+}
+
+message CreatePrivateDataResponse {
+  uint32 id = 1;
+  string title = 2;
+  uint32 type = 3;
+  google.protobuf.Timestamp updated = 4;
+  bool deleted = 5;
+}
+
+message GetPrivateDataRequest {
+  uint32 id = 1;
+}
+
+message GetPrivateDataResponse {
+  uint32 id = 1;
+  string title = 2;
+  uint32 type = 3;
+  bytes content = 4;
+  google.protobuf.Timestamp updated = 5;
+  bool deleted = 6;
+}
+
+message UpdatePrivateDataRequest {
+  uint32 id = 1;
+  string title = 2;
+  uint32 type = 3;
+  bytes content = 4;
+  google.protobuf.Timestamp updated = 5;
+  bool is_force = 6;
+}
+
+message UpdatePrivateDataResponse {
+  uint32 id = 1;
+  string title = 2;
+  uint32 type = 3;
+  bytes content = 4;
+  google.protobuf.Timestamp updated = 5;
+  bool deleted = 6;
+}
+
+message DeletePrivateDataRequest {
+  uint32 id = 1;
+}
+
+message DeletePrivateDataResponse {}
+
+message PrivateData {
+  uint32 id = 1;
+  string title = 2;
+  uint32 type = 3;
+  bytes content = 4;
+  google.protobuf.Timestamp updated = 5;
+  bool deleted = 6;
+}
+
+message GetPrivateDataByTypeRequest {
+  uint32 type_id = 1;
+}
+
+message GetPrivateDataByTypeResponse {
+  repeated PrivateData data = 1;
+}
+
+service Private {
+  rpc CreatePrivateData (CreatePrivateDataRequest) returns (CreatePrivateDataResponse);
+  rpc GetPrivateData (GetPrivateDataRequest) returns (GetPrivateDataResponse);
+  rpc UpdatePrivateData (UpdatePrivateDataRequest) returns (UpdatePrivateDataResponse);
+  rpc DeletePrivateData (DeletePrivateDataRequest) returns (DeletePrivateDataResponse);
+  rpc GetPrivateDataByType (GetPrivateDataByTypeRequest) returns (GetPrivateDataByTypeResponse);
+}
