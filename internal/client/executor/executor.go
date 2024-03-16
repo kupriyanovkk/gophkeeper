@@ -97,8 +97,8 @@ func (e *Executor) Execute(s string) {
 			return
 		}
 
-	case "edit-private":
-		if err := e.editPrivate(cmd, isForce); err != nil {
+	case "update-private":
+		if err := e.updatePrivate(cmd, isForce); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -137,7 +137,7 @@ func (e *Executor) login(args []string) error {
 			return fmt.Errorf("login: user not found")
 		}
 
-		return fmt.Errorf("login: error %w", st.Message())
+		return fmt.Errorf("login: error %w", err)
 	}
 
 	e.app.Sync.SyncAll()
@@ -336,13 +336,13 @@ func (e *Executor) getPrivateByType(args []string) ([]model.PrivateDataList, err
 	return list, nil
 }
 
-// editPrivate edits a private entity based on the provided arguments and isForce flag.
+// updatePrivate edits a private entity based on the provided arguments and isForce flag.
 //
 // Parameters:
 // - args []string: the arguments for editing the private entity
 // - isForce bool: a flag indicating whether to force the edit operation
 // Return type: error
-func (e *Executor) editPrivate(args []string, isForce bool) error {
+func (e *Executor) updatePrivate(args []string, isForce bool) error {
 	var (
 		privateType int
 		privateID   int
@@ -450,7 +450,7 @@ func (e *Executor) editPrivate(args []string, isForce bool) error {
 		return fmt.Errorf("validation error: fields is missing")
 	}
 
-	if err := e.app.PrivateService.EditPrivate(privateID, args[3], privateType, string(body), isForce); err != nil {
+	if err := e.app.PrivateService.UpdatePrivateData(privateID, args[3], privateType, string(body), isForce); err != nil {
 		st, _ := status.FromError(err)
 		fmt.Println(st.Message())
 

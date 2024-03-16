@@ -32,7 +32,7 @@ func (m *Migration) Up() error {
 // No parameters.
 // Error.
 func (m *Migration) DropTest() error {
-	migration, err := migrate.New("file://../../migrations", m.config.DatabaseDSNTest)
+	migration, err := migrate.New("file://../../../../migrations", m.config.DatabaseDSNTest)
 	if err != nil {
 		return fmt.Errorf("mingrate.New error: %w", err)
 	}
@@ -49,7 +49,7 @@ func (m *Migration) DropTest() error {
 //
 // It does not take any parameters and returns an error.
 func (m *Migration) UpTest() error {
-	migration, err := migrate.New("file://../../internal/server/migrations", m.config.DatabaseDSNTest)
+	migration, err := migrate.New("file://../../../../migrations", m.config.DatabaseDSNTest)
 	if err != nil {
 		return fmt.Errorf("mingrate.New error: %w", err)
 	}

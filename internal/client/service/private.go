@@ -127,7 +127,11 @@ func (s *PrivateService) CreatePrivate(title string, recordTypeID int, contentSt
 	return err
 }
 
-func (s *PrivateService) EditPrivate(id int, title string, recordType int, strContent string, isForce bool) error {
+// UpdatePrivateData updates the private data.
+//
+// Parameters: id (int), title (string), recordType (int), strContent (string), isForce (bool).
+// Returns: error.
+func (s *PrivateService) UpdatePrivateData(id int, title string, recordType int, strContent string, isForce bool) error {
 	var updated time.Time
 	localPrivate, _ := s.GetPrivateData(id)
 
@@ -141,7 +145,7 @@ func (s *PrivateService) EditPrivate(id int, title string, recordType int, strCo
 	}
 
 	content := []byte(s.crypt.Encode(strContent))
-	_, err := s.client.EditPrivateData(s.ctx.Ctx, &pb.EditPrivateDataRequest{
+	_, err := s.client.UpdatePrivateData(s.ctx.Ctx, &pb.UpdatePrivateDataRequest{
 		Id:      uint32(id),
 		Content: content,
 		Type:    uint32(recordType),
@@ -153,7 +157,7 @@ func (s *PrivateService) EditPrivate(id int, title string, recordType int, strCo
 		return err
 	}
 
-	fmt.Println("private data successfully edited")
+	fmt.Println("private data successfully updated")
 	s.sync.SyncAll()
 
 	return nil

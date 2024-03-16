@@ -62,6 +62,11 @@ func (s *UserPostgresStorage) Get(ctx context.Context, user model.User) (model.U
 	return user, nil
 }
 
+// Update updates a user in the UserPostgresStorage.
+//
+// ctx - The context within which the function is executed.
+// user - The user model to update.
+// Returns the updated user model and any error encountered.
 func (s *UserPostgresStorage) Update(ctx context.Context, user model.User) (model.User, error) {
 	ctxWithTimeOut, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
@@ -70,11 +75,13 @@ func (s *UserPostgresStorage) Update(ctx context.Context, user model.User) (mode
 		update users
 		set password = crypt($2, gen_salt('bf'))
 		where login = $1
+		returning id
 	`
-	_, err := s.conn.Exec(ctxWithTimeOut, sql, user.Login, user.Password)
+	err := s.conn.QueryRow(ctxWithTimeOut, sql, user.Login, user.Password).Scan(&user.ID)
 	if err != nil {
 		return user, fmt.Errorf("failed to update user: %w", err)
 	}
+
 	return user, nil
 }
 

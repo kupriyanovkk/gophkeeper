@@ -23,7 +23,7 @@ func (c *Completer) Complete(d prompt.Document) []prompt.Suggest {
 		{Text: "get-private-by-type", Description: "Get private data by type"},
 		{Text: "get-private-binary", Description: "Get private data binary"},
 		{Text: "delete-private", Description: "Delete private data"},
-		{Text: "edit-private", Description: "Edit private data"},
+		{Text: "update-private", Description: "Update private data"},
 		{Text: "exit", Description: "Exit the program"},
 	}
 

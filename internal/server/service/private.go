@@ -73,10 +73,10 @@ func (s *PrivateService) UpdatePrivateData(ctx context.Context, req *pb.UpdatePr
 		Title:   req.Title,
 		Type:    req.Type,
 		Content: req.Content,
-		Updated: time.Now(),
+		Updated: req.Updated.AsTime(),
 	}
 
-	_, err := s.storage.UpdatePrivateData(ctx, private)
+	updated, err := s.storage.UpdatePrivateData(ctx, private, req.IsForce)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Error(codes.NotFound, err.Error())
@@ -87,7 +87,14 @@ func (s *PrivateService) UpdatePrivateData(ctx context.Context, req *pb.UpdatePr
 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &pb.UpdatePrivateDataResponse{}, nil
+
+	return &pb.UpdatePrivateDataResponse{
+		Id:      updated.ID,
+		Title:   updated.Title,
+		Type:    updated.Type,
+		Updated: timestamppb.New(updated.Updated),
+		Deleted: updated.Deleted,
+	}, nil
 }
 
 // GetPrivateData retrieves private data for a user.

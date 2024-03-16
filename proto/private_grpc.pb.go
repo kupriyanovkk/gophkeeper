@@ -23,7 +23,6 @@ const (
 	Private_GetPrivateData_FullMethodName       = "/proto.Private/GetPrivateData"
 	Private_UpdatePrivateData_FullMethodName    = "/proto.Private/UpdatePrivateData"
 	Private_DeletePrivateData_FullMethodName    = "/proto.Private/DeletePrivateData"
-	Private_EditPrivateData_FullMethodName      = "/proto.Private/EditPrivateData"
 	Private_GetPrivateDataByType_FullMethodName = "/proto.Private/GetPrivateDataByType"
 )
 
@@ -35,7 +34,6 @@ type PrivateClient interface {
 	GetPrivateData(ctx context.Context, in *GetPrivateDataRequest, opts ...grpc.CallOption) (*GetPrivateDataResponse, error)
 	UpdatePrivateData(ctx context.Context, in *UpdatePrivateDataRequest, opts ...grpc.CallOption) (*UpdatePrivateDataResponse, error)
 	DeletePrivateData(ctx context.Context, in *DeletePrivateDataRequest, opts ...grpc.CallOption) (*DeletePrivateDataResponse, error)
-	EditPrivateData(ctx context.Context, in *EditPrivateDataRequest, opts ...grpc.CallOption) (*EditPrivateDataResponse, error)
 	GetPrivateDataByType(ctx context.Context, in *GetPrivateDataByTypeRequest, opts ...grpc.CallOption) (*GetPrivateDataByTypeResponse, error)
 }
 
@@ -83,15 +81,6 @@ func (c *privateClient) DeletePrivateData(ctx context.Context, in *DeletePrivate
 	return out, nil
 }
 
-func (c *privateClient) EditPrivateData(ctx context.Context, in *EditPrivateDataRequest, opts ...grpc.CallOption) (*EditPrivateDataResponse, error) {
-	out := new(EditPrivateDataResponse)
-	err := c.cc.Invoke(ctx, Private_EditPrivateData_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *privateClient) GetPrivateDataByType(ctx context.Context, in *GetPrivateDataByTypeRequest, opts ...grpc.CallOption) (*GetPrivateDataByTypeResponse, error) {
 	out := new(GetPrivateDataByTypeResponse)
 	err := c.cc.Invoke(ctx, Private_GetPrivateDataByType_FullMethodName, in, out, opts...)
@@ -109,7 +98,6 @@ type PrivateServer interface {
 	GetPrivateData(context.Context, *GetPrivateDataRequest) (*GetPrivateDataResponse, error)
 	UpdatePrivateData(context.Context, *UpdatePrivateDataRequest) (*UpdatePrivateDataResponse, error)
 	DeletePrivateData(context.Context, *DeletePrivateDataRequest) (*DeletePrivateDataResponse, error)
-	EditPrivateData(context.Context, *EditPrivateDataRequest) (*EditPrivateDataResponse, error)
 	GetPrivateDataByType(context.Context, *GetPrivateDataByTypeRequest) (*GetPrivateDataByTypeResponse, error)
 	mustEmbedUnimplementedPrivateServer()
 }
@@ -129,9 +117,6 @@ func (UnimplementedPrivateServer) UpdatePrivateData(context.Context, *UpdatePriv
 }
 func (UnimplementedPrivateServer) DeletePrivateData(context.Context, *DeletePrivateDataRequest) (*DeletePrivateDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePrivateData not implemented")
-}
-func (UnimplementedPrivateServer) EditPrivateData(context.Context, *EditPrivateDataRequest) (*EditPrivateDataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EditPrivateData not implemented")
 }
 func (UnimplementedPrivateServer) GetPrivateDataByType(context.Context, *GetPrivateDataByTypeRequest) (*GetPrivateDataByTypeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPrivateDataByType not implemented")
@@ -221,24 +206,6 @@ func _Private_DeletePrivateData_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Private_EditPrivateData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EditPrivateDataRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PrivateServer).EditPrivateData(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Private_EditPrivateData_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PrivateServer).EditPrivateData(ctx, req.(*EditPrivateDataRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Private_GetPrivateDataByType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPrivateDataByTypeRequest)
 	if err := dec(in); err != nil {
@@ -279,10 +246,6 @@ var Private_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePrivateData",
 			Handler:    _Private_DeletePrivateData_Handler,
-		},
-		{
-			MethodName: "EditPrivateData",
-			Handler:    _Private_EditPrivateData_Handler,
 		},
 		{
 			MethodName: "GetPrivateDataByType",

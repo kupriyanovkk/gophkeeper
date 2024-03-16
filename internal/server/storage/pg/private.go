@@ -45,23 +45,25 @@ func (s *PrivatePostgresStorage) CreatePrivateData(ctx context.Context, private 
 // ctx - the context for the operation
 // private - the private data to be updated
 // (model.PrivateData, error) - returns the updated private data and an error, if any
-func (s *PrivatePostgresStorage) UpdatePrivateData(ctx context.Context, private model.PrivateData) (model.PrivateData, error) {
+func (s *PrivatePostgresStorage) UpdatePrivateData(ctx context.Context, private model.PrivateData, isForce bool) (model.PrivateData, error) {
 	ctxWithTimeOut, cancel := context.WithTimeout(ctx, time.Second*5)
 	defer cancel()
 
 	p, _ := s.GetPrivateData(ctx, private)
 
-	if p.Updated.Unix() != private.Updated.Unix() {
+	if p.Updated.Unix() != private.Updated.Unix() && !isForce {
 		return private, failure.ErrCouldNotUpdatePrivateData
 	}
 
 	sql := `
 		update private
-		set content = $1, updated = $2
-		where user_id = $3 and title = $4 and type = $5
-		returning id
+		set title = $1, content = $2, updated = $3
+		where id = $4 and user_id = $5
+		returning type, updated, deleted
 	`
-	err := s.conn.QueryRow(ctxWithTimeOut, sql, hex.EncodeToString(private.Content), private.Updated, private.UserID, private.Title, private.Type).Scan(&private.ID)
+	err := s.conn.QueryRow(ctxWithTimeOut, sql, private.Title, hex.EncodeToString(private.Content),
+		time.Now(), private.ID, private.UserID,
+	).Scan(&private.Type, &private.Updated, &private.Deleted)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return private, fmt.Errorf("failed to update private data: %w", err)
@@ -98,7 +100,7 @@ func (s *PrivatePostgresStorage) GetPrivateData(ctx context.Context, private mod
 
 	decoded, errDecode := hex.DecodeString(string(private.Content))
 	if errDecode != nil {
-		return private, errDecode
+		return private, fmt.Errorf("failed to decode private data: %w", errDecode)
 	}
 
 	private.Content = decoded
@@ -144,11 +146,11 @@ func (s *PrivatePostgresStorage) GetPrivateDataByType(ctx context.Context, priva
 	sql := `
 		select id, user_id, title, type, content, updated, deleted
 		from private
-		where user_id = $1 and type = $2
+		where type = $1 and user_id = $2
 	`
-	rows, err := s.conn.Query(ctxWithTimeOut, sql, user.ID, privateType.ID)
+	rows, err := s.conn.Query(ctxWithTimeOut, sql, privateType.ID, user.ID)
 	if err != nil {
-		return nil, err
+		return privateData, err
 	}
 
 	defer rows.Close()

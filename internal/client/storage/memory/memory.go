@@ -130,6 +130,10 @@ func (s *MemoryStorage) ResetStorage() {
 	s.PrivateText = make(map[int]model.PrivateText)
 }
 
+// GetPrivateData retrieves private data based on the specified privateType.
+//
+// Parameter privateType is the type of private data to retrieve.
+// Returns a slice of pointers to proto.PrivateData.
 func (s *MemoryStorage) GetPrivateData(privateType storage.PrivateType) []*proto.PrivateData {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()

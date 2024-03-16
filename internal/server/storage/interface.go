@@ -14,7 +14,7 @@ type UserStorage interface {
 
 type PrivateStorage interface {
 	CreatePrivateData(ctx context.Context, private model.PrivateData) (model.PrivateData, error)
-	UpdatePrivateData(ctx context.Context, private model.PrivateData) (model.PrivateData, error)
+	UpdatePrivateData(ctx context.Context, private model.PrivateData, isForce bool) (model.PrivateData, error)
 	GetPrivateData(ctx context.Context, private model.PrivateData) (model.PrivateData, error)
 	DeletePrivateData(ctx context.Context, private model.PrivateData) error
 	GetPrivateDataByType(ctx context.Context, privateType model.PrivateDataType, user model.User) ([]model.PrivateData, error)
